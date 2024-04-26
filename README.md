@@ -1,0 +1,1 @@
+# native-firebase-auth--template
