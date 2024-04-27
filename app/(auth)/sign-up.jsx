@@ -90,9 +90,10 @@ const SignUp = () => {
           />
 
           <CustomButton
-            text={isLoading ? <ActivityIndicator size="large" /> : "Sign Up"}
+            text="Sign Up"
             containerStyles="mt-4"
             onPress={onSignUp}
+            isLoading={isLoading}
           />
 
           <Text>
