@@ -3,12 +3,12 @@ import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "../../components/formField";
 import CustomButton from "../../components/customButton";
-import { Link, router } from "expo-router";
+import { Link, Redirect, router } from "expo-router";
 import { auth } from "../../config/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from "../../context/authProvider";
 
-const debug = true;
+const debug = false;
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +17,9 @@ const SignUp = () => {
     rePassword: "",
   });
 
-  const { isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { isLogged } = useAuth();
 
   const onSignUp = async () => {
     if (
@@ -34,26 +36,28 @@ const SignUp = () => {
       return;
     }
 
+    setIsLoading(true);
     debug && console.log("From data: ");
     debug && console.log(formData);
 
-    await createUserWithEmailAndPassword(
-      auth,
-      formData.email,
-      formData.password
-    )
-      .then((res) => {
-        if (res) {
-          router.replace("/home");
-          Alert.alert("Success", "Successfully registered the user");
-        } else {
-          Alert.alert("Error", "Some error occurred");
-        }
-      })
-      .catch((error) => {
-        Alert.alert("Error", error.message);
-      });
+    try {
+      const res = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      Alert.alert("Success", "Successfully registered the user");
+      router.replace("/home");
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (isLogged) {
+    return <Redirect href="/home" />;
+  }
 
   return (
     <SafeAreaView className="bg-red-500 h-full">
@@ -64,13 +68,17 @@ const SignUp = () => {
             type="email-address"
             value={formData.email}
             handleChangeText={(e) => setFormData({ ...formData, email: e })}
+            placeholder="Enter Email"
           />
+
           <FormField
             title="Password"
             type="password"
             value={formData.password}
             handleChangeText={(e) => setFormData({ ...formData, password: e })}
+            placeholder="Enter Password"
           />
+
           <FormField
             title="Retype Password"
             type="password"
@@ -78,12 +86,15 @@ const SignUp = () => {
             handleChangeText={(e) =>
               setFormData({ ...formData, rePassword: e })
             }
+            placeholder="Retype Password"
           />
+
           <CustomButton
             text={isLoading ? <ActivityIndicator size="large" /> : "Sign Up"}
             containerStyles="mt-4"
             onPress={onSignUp}
           />
+
           <Text>
             Have an Account ?{" "}
             <Link className="text-blue underline" href="/sign-in">

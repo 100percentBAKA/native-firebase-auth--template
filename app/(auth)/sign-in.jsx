@@ -8,15 +8,16 @@ import { useAuth } from "../../context/authProvider";
 import { auth } from "../../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
-const debug = true;
+const debug = false;
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { isLoading, isLogged } = useAuth();
+  const { isLogged } = useAuth();
 
   const onSignIn = async () => {
     if (formData.email === "" || formData.password === "") {
@@ -25,22 +26,25 @@ const SignIn = () => {
     }
 
     debug && console.log(formData);
+    setIsLoading(true);
 
-    await signInWithEmailAndPassword(auth, formData.email, formData.password)
-      .then((res) => {
-        debug && console.log(res);
-        if (res) {
-          router.replace("/home");
-        } else {
-          Alert.alert("Error", "Some error occurred");
-        }
-      })
-      .catch((error) => {
-        Alert.alert("Error", error.message);
-      });
+    try {
+      const res = await signInWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      debug && console.log(res);
+      Alert.alert("Success", "Successfully logged the user");
+      router.replace("/home");
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (!isLoading && isLogged) {
+  if (isLogged) {
     return <Redirect href="/home " />;
   }
 
@@ -55,6 +59,7 @@ const SignIn = () => {
             value={formData.email}
             handleChangeText={(e) => setFormData({ ...formData, email: e })}
           />
+
           <FormField
             title="Password"
             type="password"
@@ -62,11 +67,13 @@ const SignIn = () => {
             value={formData.password}
             handleChangeText={(e) => setFormData({ ...formData, password: e })}
           />
+
           <CustomButton
             text={isLoading ? <ActivityIndicator size="large" /> : "Sign In"}
             containerStyles="mt-4"
             onPress={onSignIn}
           />
+
           <Text>
             Don't Have an Account ?{" "}
             <Link className="text-blue underline" href="/sign-up">
