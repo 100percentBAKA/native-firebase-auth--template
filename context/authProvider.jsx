@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
       debug && console.log("user data");
       debug && console.log(user);
       await AsyncStorage.setItem("@AuthData", JSON.stringify(user));
+      setIsLogged(true); // Add this line
     } else {
       const result = await AsyncStorage.getItem("@AuthData");
 
@@ -38,30 +39,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchData = async () => {
-    try {
-      const result = await AsyncStorage.getItem("@AuthData");
+  // const fetchData = async () => {
+  //   try {
+  //     const result = await AsyncStorage.getItem("@AuthData");
 
-      if (result) {
-        const parsedResult = JSON.parse(result);
-        debug && console.log("User set");
-        setUser(parsedResult);
-        setIsLogged(true);
-      } else {
-        debug && console.log("User set to null");
-        setUser(null);
-        setIsLogged(false);
-      }
-    } catch (error) {
-      console.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     if (result) {
+  //       const parsedResult = JSON.parse(result);
+  //       debug && console.log("User set");
+  //       setUser(parsedResult);
+  //       setIsLogged(true);
+  //     } else {
+  //       debug && console.log("User set to null");
+  //       setUser(null);
+  //       setIsLogged(false);
+  //     }
+  //   } catch (error) {
+  //     console.error(error.message);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
   const value = {
     user,
